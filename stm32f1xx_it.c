@@ -22,6 +22,7 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,6 +53,7 @@
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 	uint8_t n_count = 0; //переменная для переключения сегментов
+	extern R1, R2;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -211,11 +213,13 @@ void TIM2_IRQHandler(void)
   if (n_count == 0){
 	  HAL_GPIO_WritePin(Seg_2_GPIO_Port, Seg_2_Pin, RESET);
 	  HAL_GPIO_WritePin(Seg_1_GPIO_Port, Seg_1_Pin, SET);
+	  setnumber(R1);
   }
 
   if (n_count == 1){
 	  HAL_GPIO_WritePin(Seg_1_GPIO_Port, Seg_1_Pin, RESET);
 	  HAL_GPIO_WritePin(Seg_2_GPIO_Port, Seg_2_Pin, SET);
+	  setnumber(R2);
   }
 
   n_count++;
