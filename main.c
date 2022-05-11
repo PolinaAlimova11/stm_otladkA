@@ -62,9 +62,8 @@ static void MX_TIM4_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int timer, sec, otschot;
+int timer = 0, sec = 30, otschot = 100;
 int flag_red = -1;
-uint8_t flag_game = 10, flag_start = 1, game_over = 1; flag_but1, flag_but2, flag_but3, flag_but4;
 //extern uint8_t n_count;
 uint8_t n_count;
 extern uint8_t R1, R2;
@@ -128,7 +127,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	}*/
 
 }
-
 void buzzer_red(){
 	HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_1);
 	TIM3->PSC = notes1[0];//9
@@ -267,8 +265,6 @@ void buzzer_win(){
 		  HAL_TIM_PWM_Stop_IT(&htim3, TIM_CHANNEL_1);
 		  HAL_Delay(1000);
 }
-
-
 /* USER CODE END 0 */
 
 /**
@@ -278,10 +274,38 @@ void buzzer_win(){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	flag_start = 1;
-	uint8_t flag_otschet = 0;
-	uint8_t but1 = 5, but2 = 5, but3 = 5, but4 = 5;
+	uint8_t but_start[6][4];
+	uint8_t game_but = 15, but;
+	uint8_t flag_start, flag_otschot, flag_but1, flag_but2, flag_but3, flag_but4;
+	but_start[0][0] = 1;
+	but_start[0][1] = 2;
+	but_start[0][2] = 3;
+	but_start[0][3] = 4;
 
+	but_start[1][0] = 3;
+	but_start[1][1] = 1;
+	but_start[1][2] = 2;
+	but_start[1][3] = 4;
+
+	but_start[2][0] = 3;
+	but_start[2][1] = 4;
+	but_start[2][2] = 1;
+	but_start[2][3] = 2;
+
+	but_start[3][0] = 4;
+	but_start[3][1] = 2;
+	but_start[3][2] = 3;
+	but_start[3][3] = 1;
+
+	but_start[4][0] = 2;
+	but_start[4][1] = 3;
+	but_start[4][2] = 4;
+	but_start[4][3] = 1;
+
+	but_start[5][0] = 4;
+	but_start[5][1] = 1;
+	but_start[5][2] = 2;
+	but_start[5][3] = 3;
 
 
   /* USER CODE END 1 */
@@ -323,109 +347,134 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  flag_start = 1;
+	  flag_start = 10;
 
-	  if (flag_start != 0){
-		  ledprint(100, n_count); // режим ожидания
-		  flag_but1 = 0;
-		  flag_but2 = 0;
-		  flag_but3 = 0;
-		  flag_but4 = 0;
+	  if (flag_start == 10){
+		  ledprint(100, n_count);
 	  }
 
-
-	  if( HAL_GPIO_ReadPin(BUT_START_GPIO_Port, BUT_START_Pin) == GPIO_PIN_RESET ){
-		  flag_start = 0; //при единичном нажатии начинается игра
-		  game_over = 1;
-
+	  if (HAL_GPIO_ReadPin(BUT_START_GPIO_Port, BUT_START_Pin) == GPIO_PIN_RESET){
+		  flag_start = 0;
+		  flag_otschot = 0;
 	  }
-	  //but1 = timer % 4; //значение от 0 до 3
-	  			  // 0 - выигрышная кнопка
-	  			  // 1 и 2 - увеличение скорости
-	  			  // 3 - сразу проигрыш
-	  //but2 = timer % 4;
-	  //but3 = timer % 4;
-	  //but4 = timer % 4;
 
-	  while (flag_start == 0){//цикл игры
+	  //какая-то проблема с командами 1 и 2
 
-		  if (flag_otschet == 0){//если это первая проверка, то есть при нажатии кнопки старта начинается отчет
+	  while (flag_start != 10){
+		  if (flag_otschot == 0){//если это первая проверка, то есть при нажатии кнопки старта начинается отчет
+			  game_but = 4;
+			  //game_but = timer % 6;
 			  sec = 30;
 			  timer = 0;
+			  otschot = 100;//поставила пока быстрее
 			  flag_but1 = 0;
 			  flag_but2 = 0;
 			  flag_but3 = 0;
 			  flag_but4 = 0;
-			  otschot = 100;
-			  flag_otschet = 1;//отчет больше не будет сбиваться
-			  HAL_UART_Transmit(&huart2, "Game start\r\n", 11, 100);//мнется на одной строке, хз пока
-		  }
+			  flag_otschot = 1;//отчет больше не будет сбиваться
+			  HAL_UART_Transmit(&huart2, "Game start\r\n", 12, 100);//мнется на одной строке, хз пока
+		  	}
 
 		  ledprint(sec, n_count);
 
-		  if( HAL_GPIO_ReadPin(BUT1_GPIO_Port, BUT1_Pin) == GPIO_PIN_RESET && flag_but1 == 0){
-		  		  flag_but1 = 1; //сделаю flag_but = but1
+
+		  if (HAL_GPIO_ReadPin(BUT2_GPIO_Port, BUT2_Pin) == GPIO_PIN_RESET && flag_but2 == 0){
+			  /*buzzer_red();
+			  flag_but2 = 1;
+			  otschot = 50;
+			  flag_start = 0;*/
+			  but = but_start[game_but][1];
+			  flag_but2 = 1;
+		 }
+		  else {
+			  if (HAL_GPIO_ReadPin(BUT1_GPIO_Port, BUT1_Pin) == GPIO_PIN_RESET && flag_but1 == 0){
+				  /*buzzer_red();
+				  flag_but1 = 1;
+				  flag_start = 0;*/
+				  but = but_start[game_but][0];
+				  flag_but1 = 1;
+			  }
+			  else {
+
+			  if (HAL_GPIO_ReadPin(BUT3_GPIO_Port, BUT3_Pin) == GPIO_PIN_RESET && flag_but3 == 0){
+				  	  /*ledprint(110, 0);
+		  			  HAL_UART_Transmit(&huart2, "Game Over. You lost\r\n", 24, 100);
+		  			  buzzer_lose();
+		  			  flag_start = 10;
+		  			  flag_but3 = 1;*/
+				  but = but_start[game_but][2];
+
+		  			 // break;
+		  		  }
+			  else{
+
+			   if (HAL_GPIO_ReadPin(BUT4_GPIO_Port, BUT4_Pin) == GPIO_PIN_RESET && flag_but4 == 0){
+					  /*ledprint(110, 0);
+					  HAL_UART_Transmit(&huart2, "Game Over. You won\r\n", 24, 100);
+		  			  buzzer_win();
+		  			  flag_start = 10;
+		  			  flag_but4 = 1;*/
+				   but = but_start[game_but][3];
+		  			  //break;
+		  		  }
+			   else
+			   {
+				   flag_start = 0;
+			   }
+			  }
+			 }
+		  }
+
+		  switch (but){
+		  	  case 1: {
+		  		//buzzer_red();
+		  		flag_start = 0;
+		  		flag_but1 = 1;
+		  		but = 15;
+		  		break;
 		  	  }
 
-		  if( HAL_GPIO_ReadPin(BUT2_GPIO_Port, BUT2_Pin) == GPIO_PIN_RESET && flag_but2 == 0){
-		  		  		  flag_but2 = 1; //сделаю flag_but = but1
-		  		  	  }
+		  	  case 2: {
+		  		//buzzer_red();
+		  		otschot = 50;
+		  		flag_start = 0;
+		  		flag_but2 = 1;
+		  		but = 15;
+		  		break;
+		  	  }
+		  	  case 3: {
+		  		ledprint(110, 0);
+		  		HAL_UART_Transmit(&huart2, "Game Over. You lost\r\n", 24, 100);
+		  		buzzer_lose();
+		  		flag_start = 10;
+		  		flag_but3 = 1;
+		  		but = 15;
+		  		break;
 
-		  if( HAL_GPIO_ReadPin(BUT3_GPIO_Port, BUT3_Pin) == GPIO_PIN_RESET && flag_but3 == 0){
-		  		  		  flag_but3 = 1; //сделаю flag_but = but1
-		  		  	  }
+		  	  }
+		  	  case 4:{
+		  		ledprint(110, 0);
+		  		HAL_UART_Transmit(&huart2, "Game Over. You won\r\n", 24, 100);
+		  		buzzer_win();
+		  		flag_start = 10;
+		  		flag_but4 = 1;
+		  		but = 15;
+		  		break;
 
-		  if (flag_but1 == 1 && flag_start == 0){//тут в чём-то проблема
-			  buzzer_red();
-			  flag_but1 = 2;
+		  	  }
+
 		  }
-
-		  if (flag_but1 == 2 && otschot == 100)
-			  otschot = 50;
-
-		  if (flag_but3 == 1){ //может пойти повторно по проигрышу, надо пофиксить
-			  buzzer_win();
-			  flag_but3 = 2;
-			  flag_start = 1;
-			  flag_otschet = 0;
-			  break;
-		  }
-		  if (flag_but4 == 1 && flag_start == 0){
-			  buzzer_lose();
-			  flag_but4 = 2;
-			  flag_start = 1;
-			  flag_otschet = 0;
-			  break;
-		  }
-
-		  if( HAL_GPIO_ReadPin(BUT4_GPIO_Port, BUT4_Pin) == GPIO_PIN_RESET && flag_but4 == 0){
-			  flag_but4 = 1; //сделаю flag_but = but1
-		  }
-
-
-
-		  /*if (flag_but2 == 1){
-			  buzzer_red();
-			  flag_but2 = 2;
-		  }*/
 
 		  if (sec == 0){// если не успеем разминировать бомбу
 		  	led_lose();//хз почему не отображаются циферки, пока что просто два 0
-		  	HAL_UART_Transmit(&huart2, "Game over. Timer is over. You lose\r\n", 35, 100);
+		  	HAL_UART_Transmit(&huart2, "Game over. Timer is over. You lose\r\n", 38, 100);
 		  	buzzer_lose();
-		  	flag_start = 1;
-		  	flag_otschet = 0;
+		  	flag_start = 10;
 		  	break;
 
 		  }
-
-
 	  }
 
-	  //ledprint(sec, n_count);
-	  //if (sec == 27){
-		//  buzzer_red();
-	  //}
 
 
   }
@@ -739,6 +788,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-
-
